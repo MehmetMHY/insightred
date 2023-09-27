@@ -1,43 +1,59 @@
-import pandas as pd
-import requests
-import json
 import os
+import pandas as pd
+import praw
+import time
+import json
 
-CLIENT_ID = os.environ['CLIENT_ID']
-SECRET_KEY = os.environ['SECRET_KEY']
+# Setting up the Reddit client using PRAW
+reddit = praw.Reddit(
+    client_id=os.environ['CLIENT_ID'],
+    client_secret=os.environ['SECRET_KEY'],
+    user_agent="MyAPI/0.0.1",
+    username=os.environ['ACCOUNT_USERNAME'],
+    password=os.environ['ACCOUNT_PASSWORD']
+)
 
-auth = requests.auth.HTTPBasicAuth(CLIENT_ID, SECRET_KEY)
+def scrape_subreddit_hot(subreddit_url):
+    subreddit_name = subreddit_url.split('/')[-2]  # Assumes the URL ends with a '/'
+    subreddit = reddit.subreddit(subreddit_name)
+    
+    # Fetching hot posts from the specified subreddit
+    hot_posts = subreddit.hot(limit=10)  # Adjust the limit as needed
+    
+    data_list = []
+    for post in hot_posts:
+        post_data = {
+            "subreddit": post.subreddit.display_name,
+            "title": post.title,
+            "selftext": post.selftext,
+            "upvote_ratio": post.upvote_ratio,
+            "ups": post.ups,
+            "downs": post.downs,
+            "score": post.score,
+            "permalink": post.permalink,
+            "comments": []
+        }
+        
+        post.comments.replace_more(limit=None)  # Fetching all comments, not just top level
+        for comment in post.comments.list():
+            post_data["comments"].append({
+                "author": str(comment.author),
+                "comment": comment.body
+            })
+            
+        data_list.append(post_data)
+        time.sleep(0.6)  # Delay to comply with rate limit
+    
+    df = pd.DataFrame(data_list)
+    df['comments'] = df['comments'].apply(json.dumps)  # Convert comments to string representation
+    
+    return df
 
-data = {
-    "grant_type": "password",
-    "username": os.environ['ACCOUNT_USERNAME'],
-    "password": os.environ['ACCOUNT_PASSWORD']
-}
+# main function calls
 
-headers = {"User-Agent": "MyAPI/0.0.1"}
+subreddit_url = input("Sub-Reddit URL: ")
+df = scrape_subreddit_hot(subreddit_url)
 
-res = requests.post("https://www.reddit.com/api/v1/access_token", auth=auth, data=data, headers=headers)
+filename = "reddit_data_{}.csv".format(str(time.time()))
+df.to_csv(filename, index=False)
 
-TOKEN = res.json()["access_token"]
-
-headers = {**headers, **{'Authorization': f'bearer {TOKEN}'}}
-
-# res_hot = requests.get('https://oauth.reddit.com/r/python/hot',headers=headers,params={'limit':'50'})
-res = requests.get('https://oauth.reddit.com/r/python/new',headers=headers, params={"limit": "100"})
-
-data_list = []
-for post in res.json()["data"]["children"]:
-    data_list.append({
-        "subreddit": post["data"]["subreddit"],
-        "title": post["data"]["title"],
-        "selftext": post["data"]["selftext"],
-        "upvote_ratio": post["data"]["upvote_ratio"],
-        "ups": post["data"]["ups"],
-        "downs": post["data"]["downs"],
-        "score": post["data"]["score"],
-        "permalink": post["data"]["permalink"]
-    })
-
-df = pd.DataFrame(data_list)
-
-print(df)
