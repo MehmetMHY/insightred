@@ -4,7 +4,6 @@ import praw
 import time
 import json
 
-# Setting up the Reddit client using PRAW
 reddit = praw.Reddit(
     client_id=os.environ['CLIENT_ID'],
     client_secret=os.environ['SECRET_KEY'],
@@ -14,11 +13,10 @@ reddit = praw.Reddit(
 )
 
 def scrape_subreddit_hot(subreddit_url):
-    subreddit_name = subreddit_url.split('/')[-2]  # Assumes the URL ends with a '/'
+    subreddit_name = subreddit_url.split('/')[-2]
     subreddit = reddit.subreddit(subreddit_name)
     
-    # Fetching hot posts from the specified subreddit
-    hot_posts = subreddit.hot(limit=10)  # Adjust the limit as needed
+    hot_posts = subreddit.hot(limit=10)
     
     data_list = []
     for post in hot_posts:
@@ -34,7 +32,7 @@ def scrape_subreddit_hot(subreddit_url):
             "comments": []
         }
         
-        post.comments.replace_more(limit=None)  # Fetching all comments, not just top level
+        post.comments.replace_more(limit=None)
         for comment in post.comments.list():
             post_data["comments"].append({
                 "author": str(comment.author),
@@ -42,10 +40,10 @@ def scrape_subreddit_hot(subreddit_url):
             })
             
         data_list.append(post_data)
-        time.sleep(0.6)  # Delay to comply with rate limit
+        time.sleep(0.6)
     
     df = pd.DataFrame(data_list)
-    df['comments'] = df['comments'].apply(json.dumps)  # Convert comments to string representation
+    df['comments'] = df['comments'].apply(json.dumps)
     
     return df
 
