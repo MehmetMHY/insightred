@@ -3,4 +3,6 @@ env
 *.csv
 .DS_Store
 trp_cleaned.json
+redditset.json
+sandbox
 
