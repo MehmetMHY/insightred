@@ -1,4 +1,4 @@
-# redditAPI
+# Reddit Scrapper
 
 ## Sources:
 
