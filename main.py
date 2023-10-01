@@ -81,10 +81,13 @@ start_time = time.time()
 index = 1
 for data in all_data:
     try:
-        title = data["postTitle"].replace("\n", "")
-        content = data["postContent"].replace("\n", "")
-        comment = data["content"].replace("\n", "")
-        data["succinctContent"] = succinct_comment(title, content, comment)
+        if "[removed]" not in data["content"]:
+            title = data["postTitle"].replace("\n", "")
+            content = data["postContent"].replace("\n", "")
+            comment = data["content"].replace("\n", "")
+            data["succinctContent"] = succinct_comment(title, content, comment)
+        else:
+            data["succinctContent"] = ""
     except:
         data["succinctContent"] = ""
     print("{} / {}".format(index, len(all_data)))
