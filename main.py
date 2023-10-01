@@ -1,5 +1,6 @@
 import tiktoken
 import openai
+import time
 import json
 import os
 
@@ -20,7 +21,7 @@ def get_token_count(string: str, model: str) -> int:
 
 def create_prompt(title: str, content: str, comment: str, llm_model: str, token_limit: int) -> str:    
     prompt_template = """
-Condense the given Reddit post title, content, and comment into a succinct paragraph (max 150 words), optimized for vectorization and querying in a vector database:
+Condense the given Reddit post title, content, and comment into a succinct pargraph (max 150 words) that embodies what the comment is about:
 
 TITLE: 
       {title}
@@ -31,7 +32,7 @@ CONTENT:
 COMMENT: 
       {comment}
 
-Make sure the final succinct paragraph embodies the COMMENT the most and make sure the output only the condensed paragraph
+Make sure the final output is optimized for vectorization and querying in a vector database. Also, make sure the output is only the final condensed paragraph
 """
     prompt_token_count = get_token_count(prompt_template, llm_model)
 
@@ -41,7 +42,7 @@ Make sure the final succinct paragraph embodies the COMMENT the most and make su
     prompt = prompt_template.format(title=title, content=content, comment=comment)
 
     # TODO: remove this after testing!
-    print(prompt)
+    print("\n---> Requesting following prompt from model {}:\n```{}\n``` \n".format(llm_model, prompt))
 
     token_count = get_token_count(prompt, llm_model)
     while token_count > token_limit:
@@ -57,7 +58,7 @@ Make sure the final succinct paragraph embodies the COMMENT the most and make su
     return prompt
 
 def succinct_comment(title, content, comment):
-    llm_model = "gpt-3.5-turbo-16k"
+    llm_model = "gpt-3.5-turbo"
     token_limit = 4097 # https://platform.openai.com/docs/models/
     prompt = create_prompt(title, content, comment, llm_model, token_limit)
     completion = openai.ChatCompletion.create(
@@ -73,12 +74,24 @@ def succinct_comment(title, content, comment):
 
 openai.api_key = os.getenv("OPENAI_API_KEY").strip("\n")
 
-data = load_json("redditset_100.json")
-data = data[0]
+all_data = load_json("redditset_100.json")
 
-title = data["postTitle"]
-content = data["postContent"]
-comment = data["content"]
+start_time = time.time()
 
-output = succinct_comment(title, content, comment)
-print(output)
+index = 1
+for data in all_data:
+    try:
+        title = data["postTitle"].replace("\n", "")
+        content = data["postContent"].replace("\n", "")
+        comment = data["content"].replace("\n", "")
+        data["succinctContent"] = succinct_comment(title, content, comment)
+    except:
+        data["succinctContent"] = ""
+    print("{} / {}".format(index, len(all_data)))
+    index += 1
+
+runtime = time.time() - start_time
+
+save_json(all_data, "redditSetGPT.json")
+
+print("{} seconds.".format(runtime))
