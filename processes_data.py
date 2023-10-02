@@ -21,7 +21,8 @@ def get_token_count(string: str, model: str) -> int:
 
 def create_prompt(title: str, content: str, comment: str, llm_model: str, token_limit: int) -> str:    
     prompt_template = """
-Condense the given Reddit post title, content, and comment into a succinct pargraph (max 150 words) that embodies what the comment is about:
+
+Here is the title, content, and a comment for a Reddit post:
 
 TITLE: 
       {title}
@@ -32,7 +33,15 @@ CONTENT:
 COMMENT: 
       {comment}
 
-Make sure the final output is optimized for vectorization and querying in a vector database. Also, make sure the output is only the final condensed paragraph
+Knowing this, do the following:
+1. Create a succinct pargraph (max 150) words of the TITLE and CONTENT
+2. IF the comment is too long, summarize does to a max of 150 words
+3. Combine the final results into this format:
+```
+COMMENT: <final reddit comment after step #2> POST: <final post data from step #1>
+```
+
+Make sure to optmize the final result for vectorization and querying from a vectordatabase. And, make sure your output is ONLY the final output from step #3. DO NOT add additional context/information.
 """
     prompt_token_count = get_token_count(prompt_template, llm_model)
 
@@ -75,6 +84,9 @@ def succinct_comment(title, content, comment):
 openai.api_key = os.getenv("OPENAI_API_KEY").strip("\n")
 
 all_data = load_json("redditset_100.json")
+
+# # TODO: remove after testing
+# all_data = [all_data[50]]
 
 start_time = time.time()
 
