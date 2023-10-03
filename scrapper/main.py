@@ -23,6 +23,7 @@ Base = declarative_base()
 class Post(Base):
     __tablename__ = 'posts'
     id = Column(Integer, primary_key=True)
+    reddit_id = Column(String)
     subreddit = Column(String)
     title = Column(String)
     selftext = Column(String)
@@ -37,6 +38,7 @@ class Post(Base):
 class Comment(Base):
     __tablename__ = 'comments'
     id = Column(Integer, primary_key=True)
+    reddit_id = Column(String)
     post_id = Column(Integer, ForeignKey('posts.id'))
     author = Column(String)
     comment = Column(Text)
@@ -87,6 +89,7 @@ def scrape_subreddit_hot(subreddit_url, limit=10, session=None):
         start_time = time.time()
 
         post_data = {
+            "reddit_id": str(post.id),
             "subreddit": post.subreddit.display_name,
             "title": post.title,
             "selftext": post.selftext,
@@ -101,12 +104,12 @@ def scrape_subreddit_hot(subreddit_url, limit=10, session=None):
         post.comments.replace_more(limit=None)
         for comment in post.comments.list():
             post_data["comments"].append({
+                "reddit_id": str(comment.id),  # <-- ensure this line is here
                 "author": str(comment.author),
                 "comment": comment.body,
                 "url": f"https://reddit.com{comment.permalink}",
                 "date": datetime.datetime.utcfromtimestamp(comment.created_utc).strftime('%Y-%m-%d %H:%M:%S'),
-                "score": comment.score,
-                "reddit_id": comment.id  # Add this line to capture the Reddit comment ID
+                "score": comment.score
             })
 
         data_list.append(post_data)
@@ -126,25 +129,44 @@ def save_to_db(session, data_list):
     current_epoch_time = int(time.time())
 
     for post_data in data_list:
+        # Extract comments from post_data
         comments_data = post_data.pop('comments')
+
+        # Add recorded time to post_data
         post_data["recorded"] = current_epoch_time
 
-        # Create and save the Post object
-        post = Post(**post_data)
-        session.add(post)
-        session.commit()
+        # Check if post with this Reddit ID already exists
+        reddit_id = post_data["reddit_id"]
+        existing_post = session.query(Post).filter_by(
+            reddit_id=reddit_id).first()
+        if existing_post:
+            print(
+                f"Post {reddit_id} already exists in DB, updating comments only.")
+            post_id = existing_post.id  # Save for later use in comments
+        else:
+            print(f"Adding new post {reddit_id} to DB.")
+            # Create and save the Post object
+            post = Post(**post_data)
+            session.add(post)
+            session.commit()  # commit here to ensure post.id is populated
+            post_id = post.id  # Save for later use in comments
 
         # Create and save Comment objects
         for comment_data in comments_data:
-            comment_data["post_id"] = post.id
-            comment_data["recorded"] = current_epoch_time
+            # Check if comment with this Reddit ID already exists
+            comment_reddit_id = comment_data["reddit_id"]
+            existing_comment = session.query(Comment).filter_by(
+                reddit_id=comment_reddit_id).first()
+            if existing_comment:
+                # print(f"Comment {comment_reddit_id} already exists, skipping.")
+                continue
 
-            # Check if the comment already exists
-            comment_exists = session.query(Comment).filter_by(
-                reddit_id=comment_data["reddit_id"]).first()
-            if not comment_exists:
-                comment = Comment(**comment_data)
-                session.add(comment)
+            # print(f"Adding new comment {comment_reddit_id} to DB.")
+            comment_data["post_id"] = post_id  # use post_id saved earlier
+            # Add recorded time to comment_data
+            comment_data["recorded"] = current_epoch_time
+            comment = Comment(**comment_data)
+            session.add(comment)
 
         session.commit()
 
