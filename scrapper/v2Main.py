@@ -54,23 +54,34 @@ def initialize_db():
 def scrape_subreddit_hot(subreddit_url, limit=10, session=None):
     subreddit_name = subreddit_url.split('/')[-2]
     subreddit = reddit.subreddit(subreddit_name)
+    hot_posts = subreddit.hot(limit=limit)
 
     data_list = []
-    for post_index, post in enumerate(subreddit.hot(limit=limit), start=1):
-        if post.stickied:
+    for post_index, post in enumerate(hot_posts, start=1):
+        if post.stickied:  # Skip if the post is pinned
             print(f"---> Skipping pinned post {post_index}: {post.title}")
             continue
 
         if session:
-            # Check if post comments have been scraped previously
-            exists = session.query(Comment.url).filter_by(
-                url=post.permalink).first() is not None
+            # Check if post has been scraped previously
+            exists = session.query(Post).filter_by(
+                permalink=post.permalink).first()
             if exists:
+                # Check if there are new comments
+                current_comment_count = session.query(
+                    Comment).filter_by(post_id=exists.id).count()
+                if current_comment_count >= post.num_comments:
+                    print(
+                        f"---> Skipping post {post_index}: {post.title} as it has no new comments.")
+                    continue
+                else:
+                    print(
+                        f"---> Updating post {post_index}: {post.title} for new comments.")
+            else:
                 print(
-                    f"---> Skipping post {post_index}: {post.title} as it has been scraped previously.")
-                continue
+                    f"---> Scraping new post {post_index}: {post.title}")
 
-        start_time = time.time()  # Capture the start time
+        start_time = time.time()
 
         post_data = {
             "subreddit": post.subreddit.display_name,
@@ -131,7 +142,7 @@ def save_to_db(session, data_list):
 if __name__ == "__main__":
     subreddit_url = input("Sub-Reddit URL: ")
     session = initialize_db()
-    data_list = scrape_subreddit_hot(subreddit_url, 10, session)
+    data_list = scrape_subreddit_hot(subreddit_url, 12, session)
 
     # Save data to SQLite database
     save_to_db(session, data_list)
