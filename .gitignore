@@ -9,4 +9,6 @@ redditset_100.json
 redditSetGPT.json
 .~lock.*
 reddit_data_*.json
+__pycache__/
+reddit_data.db
 
