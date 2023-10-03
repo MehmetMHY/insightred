@@ -2,7 +2,7 @@ import os
 import time
 import json
 import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Text
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import praw
@@ -31,6 +31,7 @@ class Post(Base):
     downs = Column(Integer)
     score = Column(Integer)
     permalink = Column(String)
+    vectorized = Column(Boolean, default=False)
 
 
 class Comment(Base):

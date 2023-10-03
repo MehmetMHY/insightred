@@ -3,13 +3,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Define SQLAlchemy models if not defined in this script
-from v2Main import Post, Comment
+# NOTE: You might want to update the import statement with the correct path and model names.
+from v2Main import Post, Comment  
 
 # Initialize DB session
 engine = create_engine('sqlite:///reddit_data.db')
 Session = sessionmaker(bind=engine)
 session = Session()
-
 
 def retrieve_and_print_data(session):
     # Retrieve all posts from the database
@@ -27,6 +27,7 @@ def retrieve_and_print_data(session):
             "downs": post.downs,
             "score": post.score,
             "permalink": post.permalink,
+            "vectorized": post.vectorized,  # Include the 'vectorized' field
             "comments": []
         }
 
@@ -48,6 +49,6 @@ def retrieve_and_print_data(session):
     json_str = json.dumps(data_list, indent=4)
     print(json_str)
 
-
 # Call the function to retrieve and print the data
 retrieve_and_print_data(session)
+
