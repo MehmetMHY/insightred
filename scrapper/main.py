@@ -1,9 +1,12 @@
 import os
-import pandas as pd
-import praw
 import time
 import json
 import datetime
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Text, Boolean
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import praw
+import pandas as pd
 
 reddit = praw.Reddit(
     client_id=os.environ['CLIENT_ID'],
@@ -13,11 +16,47 @@ reddit = praw.Reddit(
     password=os.environ['ACCOUNT_PASSWORD']
 )
 
+# SQLAlchemy Models
+Base = declarative_base()
 
-def scrape_subreddit_hot(subreddit_url, limit=10):
+
+class Post(Base):
+    __tablename__ = 'posts'
+    id = Column(Integer, primary_key=True)
+    subreddit = Column(String)
+    title = Column(String)
+    selftext = Column(String)
+    upvote_ratio = Column(Float)
+    ups = Column(Integer)
+    downs = Column(Integer)
+    score = Column(Integer)
+    permalink = Column(String)
+    vectorized = Column(Boolean, default=False)
+    recorded = Column(Integer)
+
+
+class Comment(Base):
+    __tablename__ = 'comments'
+    id = Column(Integer, primary_key=True)
+    post_id = Column(Integer, ForeignKey('posts.id'))
+    author = Column(String)
+    comment = Column(Text)
+    url = Column(String)
+    date = Column(String)
+    score = Column(Integer)
+    recorded = Column(Integer)
+
+
+def initialize_db():
+    engine = create_engine('sqlite:///reddit_data.db')
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    return Session()
+
+
+def scrape_subreddit_hot(subreddit_url, limit=10, session=None):
     subreddit_name = subreddit_url.split('/')[-2]
     subreddit = reddit.subreddit(subreddit_name)
-
     hot_posts = subreddit.hot(limit=limit)
 
     data_list = []
@@ -26,7 +65,26 @@ def scrape_subreddit_hot(subreddit_url, limit=10):
             print(f"---> Skipping pinned post {post_index}: {post.title}")
             continue
 
-        start_time = time.time()  # Capture the start time
+        if session:
+            # Check if post has been scraped previously
+            exists = session.query(Post).filter_by(
+                permalink=post.permalink).first()
+            if exists:
+                # Check if there are new comments
+                current_comment_count = session.query(
+                    Comment).filter_by(post_id=exists.id).count()
+                if current_comment_count >= post.num_comments:
+                    print(
+                        f"---> Skipping post {post_index}: {post.title} as it has no new comments.")
+                    continue
+                else:
+                    print(
+                        f"---> Updating post {post_index}: {post.title} for new comments.")
+            else:
+                print(
+                    f"---> Scraping new post {post_index}: {post.title}")
+
+        start_time = time.time()
 
         post_data = {
             "subreddit": post.subreddit.display_name,
@@ -52,27 +110,56 @@ def scrape_subreddit_hot(subreddit_url, limit=10):
 
         data_list.append(post_data)
 
-        end_time = time.time()  # Capture the end time
-        execution_time = end_time - start_time  # Calculate the execution time
+        end_time = time.time()
+        execution_time = end_time - start_time
 
         print(
             f"Data gathering for post {post_index} completed in {execution_time:.2f} seconds.")
         time.sleep(0.6)
 
-    df = pd.DataFrame(data_list)
+    return data_list
 
-    return df
+
+def save_to_db(session, data_list):
+    # Get current epoch time as an integer
+    current_epoch_time = int(time.time())
+
+    for post_data in data_list:
+        # Extract comments from post_data
+        comments_data = post_data.pop('comments')
+
+        # Add recorded time to post_data
+        post_data["recorded"] = current_epoch_time
+
+        # Create and save the Post object
+        post = Post(**post_data)
+        session.add(post)
+        session.commit()  # commit here to ensure post.id is populated
+
+        # Create and save Comment objects
+        for comment_data in comments_data:
+            comment_data["post_id"] = post.id
+            # Add recorded time to comment_data
+            comment_data["recorded"] = current_epoch_time
+            comment = Comment(**comment_data)
+            session.add(comment)
+
+        session.commit()
+
+    print("Data saved to database successfully.")
 
 
 # main function calls
-subreddit_url = input("Sub-Reddit URL: ")
-df = scrape_subreddit_hot(subreddit_url, 100)
+if __name__ == "__main__":
+    subreddit_url = input("Sub-Reddit URL: ")
+    session = initialize_db()
+    data_list = scrape_subreddit_hot(subreddit_url, 12, session)
 
-filename = "reddit_data_{}.json".format(str(time.time()))
+    # Save data to SQLite database
+    save_to_db(session, data_list)
 
-# Convert DataFrame to JSON string with indents
-json_str = json.dumps(df.to_dict(orient='records'), indent=4)
-
-# Write JSON string to file
-with open(filename, 'w') as f:
-    f.write(json_str)
+    # Optionally: Save data to JSON file as well
+    filename = f"reddit_data_{str(time.time())}.json"
+    json_str = json.dumps(data_list, indent=4)
+    with open(filename, 'w') as f:
+        f.write(json_str)
