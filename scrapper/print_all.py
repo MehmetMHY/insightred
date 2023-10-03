@@ -2,14 +2,8 @@ import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Define SQLAlchemy models if not defined in this script
-# NOTE: You might want to update the import statement with the correct path and model names.
-from v2Main import Post, Comment  
-
-# Initialize DB session
-engine = create_engine('sqlite:///reddit_data.db')
-Session = sessionmaker(bind=engine)
-session = Session()
+# Note: Adjust the import statement based on your file and class structure
+from main import Post, Comment, initialize_db  
 
 def retrieve_and_print_data(session):
     # Retrieve all posts from the database
@@ -28,7 +22,6 @@ def retrieve_and_print_data(session):
             "downs": post.downs,
             "score": post.score,
             "permalink": post.permalink,
-            "vectorized": post.vectorized,
             "recorded": post.recorded,
             "comments": []
         }
@@ -42,7 +35,8 @@ def retrieve_and_print_data(session):
                 "url": comment.url,
                 "date": comment.date,
                 "score": comment.score,
-                "recorded": comment.recorded
+                "recorded": comment.recorded,
+                "reddit_id": comment.reddit_id  # include reddit_id in data
             }
             post_data["comments"].append(comment_data)
 
@@ -51,6 +45,9 @@ def retrieve_and_print_data(session):
     # Convert data to JSON and print
     json_str = json.dumps(data_list, indent=4)
     print(json_str)
+
+# Initialize DB session
+session = initialize_db()  # Utilize the function from your main script
 
 # Call the function to retrieve and print the data
 retrieve_and_print_data(session)

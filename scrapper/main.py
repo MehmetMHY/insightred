@@ -31,7 +31,6 @@ class Post(Base):
     downs = Column(Integer)
     score = Column(Integer)
     permalink = Column(String)
-    vectorized = Column(Boolean, default=False)
     recorded = Column(Integer)
 
 
@@ -45,6 +44,7 @@ class Comment(Base):
     date = Column(String)
     score = Column(Integer)
     recorded = Column(Integer)
+    reddit_id = Column(String)
 
 
 def initialize_db():
@@ -105,7 +105,8 @@ def scrape_subreddit_hot(subreddit_url, limit=10, session=None):
                 "comment": comment.body,
                 "url": f"https://reddit.com{comment.permalink}",
                 "date": datetime.datetime.utcfromtimestamp(comment.created_utc).strftime('%Y-%m-%d %H:%M:%S'),
-                "score": comment.score
+                "score": comment.score,
+                "reddit_id": comment.id  # Add this line to capture the Reddit comment ID
             })
 
         data_list.append(post_data)
@@ -125,24 +126,25 @@ def save_to_db(session, data_list):
     current_epoch_time = int(time.time())
 
     for post_data in data_list:
-        # Extract comments from post_data
         comments_data = post_data.pop('comments')
-
-        # Add recorded time to post_data
         post_data["recorded"] = current_epoch_time
 
         # Create and save the Post object
         post = Post(**post_data)
         session.add(post)
-        session.commit()  # commit here to ensure post.id is populated
+        session.commit()
 
         # Create and save Comment objects
         for comment_data in comments_data:
             comment_data["post_id"] = post.id
-            # Add recorded time to comment_data
             comment_data["recorded"] = current_epoch_time
-            comment = Comment(**comment_data)
-            session.add(comment)
+
+            # Check if the comment already exists
+            comment_exists = session.query(Comment).filter_by(
+                reddit_id=comment_data["reddit_id"]).first()
+            if not comment_exists:
+                comment = Comment(**comment_data)
+                session.add(comment)
 
         session.commit()
 
@@ -151,15 +153,12 @@ def save_to_db(session, data_list):
 
 # main function calls
 if __name__ == "__main__":
+    print("\n\n")
     subreddit_url = input("Sub-Reddit URL: ")
+    hot_posts_limit = input("Post Limit: ")
+    print("\n\n")
+
+    hot_posts_limit = int(hot_posts_limit)
     session = initialize_db()
-    data_list = scrape_subreddit_hot(subreddit_url, 12, session)
-
-    # Save data to SQLite database
+    data_list = scrape_subreddit_hot(subreddit_url, hot_posts_limit, session)
     save_to_db(session, data_list)
-
-    # Optionally: Save data to JSON file as well
-    filename = f"reddit_data_{str(time.time())}.json"
-    json_str = json.dumps(data_list, indent=4)
-    with open(filename, 'w') as f:
-        f.write(json_str)
