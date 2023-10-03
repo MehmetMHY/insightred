@@ -19,6 +19,7 @@ def retrieve_and_print_data(session):
     data_list = []
     for post in posts:
         post_data = {
+            "id": post.id,
             "subreddit": post.subreddit,
             "title": post.title,
             "selftext": post.selftext,
@@ -27,7 +28,8 @@ def retrieve_and_print_data(session):
             "downs": post.downs,
             "score": post.score,
             "permalink": post.permalink,
-            "vectorized": post.vectorized,  # Include the 'vectorized' field
+            "vectorized": post.vectorized,
+            "recorded": post.recorded,
             "comments": []
         }
 
@@ -39,7 +41,8 @@ def retrieve_and_print_data(session):
                 "comment": comment.comment,
                 "url": comment.url,
                 "date": comment.date,
-                "score": comment.score
+                "score": comment.score,
+                "recorded": comment.recorded
             }
             post_data["comments"].append(comment_data)
 

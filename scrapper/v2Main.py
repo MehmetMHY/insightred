@@ -32,6 +32,7 @@ class Post(Base):
     score = Column(Integer)
     permalink = Column(String)
     vectorized = Column(Boolean, default=False)
+    recorded = Column(Integer)
 
 
 class Comment(Base):
@@ -43,6 +44,7 @@ class Comment(Base):
     url = Column(String)
     date = Column(String)
     score = Column(Integer)
+    recorded = Column(Integer)
 
 
 def initialize_db():
@@ -119,9 +121,15 @@ def scrape_subreddit_hot(subreddit_url, limit=10, session=None):
 
 
 def save_to_db(session, data_list):
+    # Get current epoch time as an integer
+    current_epoch_time = int(time.time())
+
     for post_data in data_list:
         # Extract comments from post_data
         comments_data = post_data.pop('comments')
+
+        # Add recorded time to post_data
+        post_data["recorded"] = current_epoch_time
 
         # Create and save the Post object
         post = Post(**post_data)
@@ -131,6 +139,8 @@ def save_to_db(session, data_list):
         # Create and save Comment objects
         for comment_data in comments_data:
             comment_data["post_id"] = post.id
+            # Add recorded time to comment_data
+            comment_data["recorded"] = current_epoch_time
             comment = Comment(**comment_data)
             session.add(comment)
 
