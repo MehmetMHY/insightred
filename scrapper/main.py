@@ -14,11 +14,11 @@ reddit = praw.Reddit(
 )
 
 
-def scrape_subreddit_hot(subreddit_url):
+def scrape_subreddit_hot(subreddit_url, limit=10):
     subreddit_name = subreddit_url.split('/')[-2]
     subreddit = reddit.subreddit(subreddit_name)
 
-    hot_posts = subreddit.hot(limit=10)
+    hot_posts = subreddit.hot(limit=limit)
 
     data_list = []
     for post_index, post in enumerate(hot_posts, start=1):
@@ -66,7 +66,7 @@ def scrape_subreddit_hot(subreddit_url):
 
 # main function calls
 subreddit_url = input("Sub-Reddit URL: ")
-df = scrape_subreddit_hot(subreddit_url)
+df = scrape_subreddit_hot(subreddit_url, 100)
 
 filename = "reddit_data_{}.json".format(str(time.time()))
 
