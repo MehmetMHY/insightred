@@ -173,14 +173,17 @@ def save_to_db(session, data_list):
     print("Data saved to database successfully.")
 
 
+def main(subreddit_url, hot_posts_limit):
+    hot_posts_limit = int(hot_posts_limit)
+    session = initialize_db()
+    data_list = scrape_subreddit_hot(subreddit_url, hot_posts_limit, session)
+    save_to_db(session, data_list)
+
+
 # main function calls
 if __name__ == "__main__":
     print("\n\n")
     subreddit_url = input("Sub-Reddit URL: ")
     hot_posts_limit = input("Post Limit: ")
     print("\n\n")
-
-    hot_posts_limit = int(hot_posts_limit)
-    session = initialize_db()
-    data_list = scrape_subreddit_hot(subreddit_url, hot_posts_limit, session)
-    save_to_db(session, data_list)
+    main(subreddit_url, hot_posts_limit)
