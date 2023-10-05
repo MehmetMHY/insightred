@@ -50,7 +50,7 @@ class Comment(Base):
 
 
 def initialize_db():
-    engine = create_engine('sqlite:///reddit_data.db')
+    engine = create_engine('sqlite:///.reddit_data.db')
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     return Session()
@@ -158,10 +158,10 @@ def save_to_db(session, data_list):
             existing_comment = session.query(Comment).filter_by(
                 reddit_id=comment_reddit_id).first()
             if existing_comment:
-                # print(f"Comment {comment_reddit_id} already exists, skipping.")
+                print(f"Comment {comment_reddit_id} already exists, skipping.")
                 continue
 
-            # print(f"Adding new comment {comment_reddit_id} to DB.")
+            print(f"Adding new comment {comment_reddit_id} to DB.")
             comment_data["post_id"] = post_id  # use post_id saved earlier
             # Add recorded time to comment_data
             comment_data["recorded"] = current_epoch_time

@@ -11,4 +11,5 @@ redditSetGPT.json
 reddit_data_*.json
 __pycache__/
 reddit_data.db
+.reddit_data.db
 
