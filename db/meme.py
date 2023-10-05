@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
 
 # Note: Adjust the import statement based on your file and class structure
-from reddit_scrape import Post, Comment, initialize_db
+from reddit import Post, Comment, initialize_db
 
 
 def object_as_dict(obj):
