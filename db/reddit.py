@@ -6,6 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import praw
 import pandas as pd
+import json
 
 reddit = praw.Reddit(
     client_id=os.environ['CLIENT_ID'],
@@ -46,6 +47,7 @@ class Comment(Base):
     score = Column(Integer)
     recorded = Column(Integer)
     reddit_id = Column(String)
+    vectorized = Column(Boolean, default=False)
 
 
 def initialize_db():
@@ -172,9 +174,32 @@ def save_to_db(session, data_list):
     print("Data saved to database successfully.")
 
 
-def get_reddit(subreddit_url, hot_posts_limit):
-    hot_posts_limit = int(hot_posts_limit)
-    session = initialize_db()
-    data_list = scrape_subreddit_hot(subreddit_url, hot_posts_limit, session)
-    save_to_db(session, data_list)
+def get_reddit(subreddit_urls, hot_posts_limit):
+    for subreddit_url in subreddit_urls:
+        hot_posts_limit = int(hot_posts_limit)
+        session = initialize_db()
+        data_list = scrape_subreddit_hot(
+            subreddit_url, hot_posts_limit, session)
+        save_to_db(session, data_list)
     return
+
+
+if __name__ == "__main__":
+    print("\n\n")
+
+    subreddits = []
+    while True:
+        subreddit = input("SUB-REDDIT (type 'exit' to process): ")
+        if subreddit.lower() == 'exit':
+            break
+        else:
+            subreddits.append(subreddit)
+
+    print()
+
+    postlimit = input("POST LIMIT: ")
+    postlimit = int(postlimit)
+
+    print("\n\n")
+
+    get_reddit(subreddits, postlimit)
