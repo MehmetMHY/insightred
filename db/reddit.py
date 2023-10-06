@@ -7,6 +7,8 @@ from sqlalchemy.orm import sessionmaker
 import praw
 import pandas as pd
 import json
+import uuid
+from sqlalchemy import create_engine, Column, String, Float, ForeignKey, Text, Boolean
 
 reddit = praw.Reddit(
     client_id=os.environ['CLIENT_ID'],
@@ -22,7 +24,8 @@ Base = declarative_base()
 
 class Post(Base):
     __tablename__ = 'posts'
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True, default=lambda: str(
+        uuid.uuid4()), unique=True, nullable=False)
     reddit_id = Column(String)
     subreddit = Column(String)
     title = Column(String)
@@ -37,7 +40,8 @@ class Post(Base):
 
 class Comment(Base):
     __tablename__ = 'comments'
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True, default=lambda: str(
+        uuid.uuid4()), unique=True, nullable=False)
     reddit_id = Column(String)
     post_id = Column(Integer, ForeignKey('posts.id'))
     author = Column(String)
@@ -104,8 +108,12 @@ def scrape_subreddit_hot(subreddit_url, limit=10, session=None):
 
         post.comments.replace_more(limit=None)
         for comment in post.comments.list():
+            # Ignore deleted or removed comments
+            if comment.body == "[deleted]" or comment.body == "[removed]" or comment.author is None:
+                continue
+
             post_data["comments"].append({
-                "reddit_id": str(comment.id),  # <-- ensure this line is here
+                "reddit_id": str(comment.id),
                 "author": str(comment.author),
                 "comment": comment.body,
                 "url": f"https://reddit.com{comment.permalink}",
