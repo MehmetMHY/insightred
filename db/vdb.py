@@ -100,6 +100,7 @@ def vectorize(model, token_limit, index_name):
         post_id = clean_str(comment["post_id"])
         post_title = clean_str(comment["postData"]["title"])
         post_content = clean_str(comment["postData"]["selftext"])
+        post_subreddit = clean_str(comment["postData"]["subreddit"])
 
         comment_id = clean_str(comment["id"])
         comment_content = clean_str(comment["comment"])
@@ -109,7 +110,8 @@ def vectorize(model, token_limit, index_name):
         prompt = create_prompt(all_post, comment_content)
         meta_data = {
             "post": post_id,
-            "comment": comment_id
+            "comment": comment_id,
+            "subreddit": post_subreddit
         }
 
         token_count = get_token_count(prompt, model)
@@ -143,8 +145,9 @@ def vectorize(model, token_limit, index_name):
         # Get metadata to store
         metadata = [
             {
-                'postID': item['meta_data']['post'],
-                'commentID': item['meta_data']['comment']
+                'post': item['meta_data']['post'],
+                'comment': item['meta_data']['comment'],
+                'subreddit': item['meta_data']['subreddit']
             } for item in batch
         ]
 
@@ -162,8 +165,8 @@ def vectorize(model, token_limit, index_name):
     session.close()
     print("DONE!")
 
+
 if __name__ == "__main__":
     index_name = "areddit"
     initilize_pinecone("areddit", 1536, 'cosine')
     vectorize(model_name, token_limit, index_name)
-

@@ -35,13 +35,16 @@ def clean_str(content):
     return s
 
 
-def augment_prompt(query: str):
+def augment_prompt(query: str, ignore_subreddits=[]):
     session = initialize_db()
 
-    query = "COMMENT: {} POST: {}".format(query, query)
-
     # get top 3 results from knowledge base
-    results = vectorstore.similarity_search(query, k=8)
+    results = vectorstore.similarity_search(query, k=8, filter={
+        "subreddit": {
+            "$nin": ignore_subreddits
+        }
+    })
+
     # get the text from the results
     source_knowledge = ""
     i = 1
@@ -120,7 +123,7 @@ index_name = "areddit"
 
 index = pinecone.Index(index_name)
 
-text_field = "commentID"  # the metadata field that contains our text
+text_field = "comment"  # the metadata field that contains our text
 
 # initialize the vector store object
 vectorstore = Pinecone(
@@ -131,6 +134,10 @@ vectorstore = Pinecone(
 print()
 query = input("Product Description:\n")
 print()
+ignore_subreddits = input("Subreddits To Ignore:\n")
+print()
+
+ignore_subreddits = ignore_subreddits.split(",")
 
 prompt = HumanMessage(
     content=augment_prompt(query)
