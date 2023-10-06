@@ -35,13 +35,13 @@ def clean_str(content):
     return s
 
 
-def augment_prompt(query: str, post_about):
+def augment_prompt(query: str):
     session = initialize_db()
 
-    query = "COMMENT: {} POST: {}".format(query, post_about)
+    query = "COMMENT: {} POST: {}".format(query, query)
 
     # get top 3 results from knowledge base
-    results = vectorstore.similarity_search(query, k=10)
+    results = vectorstore.similarity_search(query, k=8)
     # get the text from the results
     source_knowledge = ""
     i = 1
@@ -130,16 +130,17 @@ vectorstore = Pinecone(
 
 print()
 query = input("Product Description:\n")
-post_about = input("POST ABOUT: ")
 print()
 
 prompt = HumanMessage(
-    content=augment_prompt(query, post_about)
+    content=augment_prompt(query)
 )
 
 messages = [prompt]
 
 res = chat(messages)
 
-print("OUTPUT:")
+print("OUTPUT")
+print("======\n")
+
 print(res.content)

@@ -162,7 +162,8 @@ def vectorize(model, token_limit, index_name):
     session.close()
     print("DONE!")
 
+if __name__ == "__main__":
+    index_name = "areddit"
+    initilize_pinecone("areddit", 1536, 'cosine')
+    vectorize(model_name, token_limit, index_name)
 
-# index_name = "areddit"
-# initilize_pinecone("areddit", 1536, 'cosine')
-# vectorize(model_name, token_limit, index_name)
