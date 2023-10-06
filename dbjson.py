@@ -1,8 +1,6 @@
 import json
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
-
-# Note: Adjust the import statement based on your file and class structure
 from reddit import Post, Comment, initialize_db
 
 
@@ -29,6 +27,7 @@ def retrieve_data(session):
 
     return data_list
 
+
 # Initialize DB session
 session = initialize_db()
 
@@ -40,4 +39,3 @@ with open(filename, 'w') as json_file:
     json.dump(data, json_file, indent=4)
 
 print("Created Sqlite Back: {}".format(filename))
-
