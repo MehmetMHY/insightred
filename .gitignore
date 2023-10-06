@@ -12,4 +12,6 @@ reddit_data_*.json
 __pycache__/
 reddit_data.db
 .reddit_data.db
+.sandbox
+.sqlite_db.json
 

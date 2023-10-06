@@ -10,7 +10,7 @@ def object_as_dict(obj):
     return {column.key: getattr(obj, column.key) for column in inspect(obj).mapper.column_attrs}
 
 
-def retrieve_and_print_data(session):
+def retrieve_data(session):
     # Retrieve all posts from the database
     posts = session.query(Post).all()
 
@@ -27,13 +27,17 @@ def retrieve_and_print_data(session):
 
         data_list.append(post_data)
 
-    # Convert data to JSON and print
-    json_str = json.dumps(data_list, indent=4)
-    print(json_str)
-
+    return data_list
 
 # Initialize DB session
 session = initialize_db()
 
 # Call the function to retrieve and print the data
-retrieve_and_print_data(session)
+data = retrieve_data(session)
+
+filename = ".sqlite_db.json"
+with open(filename, 'w') as json_file:
+    json.dump(data, json_file, indent=4)
+
+print("Created Sqlite Back: {}".format(filename))
+
