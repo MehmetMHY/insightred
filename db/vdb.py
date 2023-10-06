@@ -163,6 +163,6 @@ def vectorize(model, token_limit, index_name):
     print("DONE!")
 
 
-index_name = "areddit"
-initilize_pinecone("areddit", 1536, 'cosine')
-vectorize(model_name, token_limit, index_name)
+# index_name = "areddit"
+# initilize_pinecone("areddit", 1536, 'cosine')
+# vectorize(model_name, token_limit, index_name)
