@@ -1,28 +1,18 @@
-import json
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
-from reddit import Post, Comment, initialize_db
 import re
 import tiktoken
-import openai
 import time
-import json
-import os
-import json
-import pandas as pd
 from langchain.embeddings.openai import OpenAIEmbeddings
-import os
 import pinecone
-import time
+
+from reddit import Post, Comment, initialize_db
+from config import config
 
 pinecone.init(
-    api_key=os.environ["PINECONE_API_KEY"],
-    environment='gcp-starter'
+    api_key=config["pinecone_db"]["api_key"],
+    environment=config["pinecone_db"]["environment"]
 )
-
-model_name = "text-embedding-ada-002"
-token_limit = 8192
-embed_model = OpenAIEmbeddings(model=model_name)
 
 
 def get_token_count(string: str, model: str) -> int:
@@ -86,7 +76,7 @@ def initilize_pinecone(index_name, dimension, metric):
             time.sleep(3)
 
 
-def vectorize(model, token_limit, index_name):
+def vectorize(embed_model, model, token_limit, index_name):
     session = initialize_db()
     comments = comments_to_vectorize()
 
@@ -167,6 +157,14 @@ def vectorize(model, token_limit, index_name):
 
 
 if __name__ == "__main__":
-    index_name = "areddit"
-    initilize_pinecone("areddit", 1536, 'cosine')
-    vectorize(model_name, token_limit, index_name)
+    model_name = config["embedding"]["name"]
+    token_limit = config["embedding"]["token_limit"]
+    index_name = config["pinecone_db"]["index"]
+    vdb_dimension = config["pinecone_db"]["dimension"]
+    vdb_metric = config["pinecone_db"]["metric"]
+
+    embed_model = OpenAIEmbeddings(model=model_name)
+
+    initilize_pinecone(index_name, vdb_dimension, vdb_metric)
+
+    vectorize(embed_model, model_name, token_limit, index_name)

@@ -14,6 +14,7 @@ from langchain.schema import (
 import json
 
 from reddit import Post, Comment, initialize_db
+from config import config
 
 
 def object_as_dict(obj):
@@ -107,47 +108,45 @@ Output the results in the following JSON format: an array of objects, where each
     return augmented_prompt
 
 
-embed_model = OpenAIEmbeddings(model="text-embedding-ada-002")
+if __name__ == "__main__":
+    embed_model = OpenAIEmbeddings(model=config["embedding"]["name"])
 
-pinecone.init(
-    api_key=os.environ["PINECONE_API_KEY"],
-    environment='gcp-starter'
-)
+    pinecone.init(
+        api_key=config["pinecone_db"]["api_key"],
+        environment=config["pinecone_db"]["environment"]
+    )
 
-chat = ChatOpenAI(
-    openai_api_key=os.environ["OPENAI_API_KEY"],
-    model='gpt-4'
-)
+    chat = ChatOpenAI(
+        openai_api_key=config["rag"]["openai_api_key"],
+        model=config["rag"]["main_model"]
+    )
 
-index_name = "areddit"
+    index = pinecone.Index(config["pinecone_db"]["index"])
 
-index = pinecone.Index(index_name)
+    text_field = "comment"  # the metadata field that contains the text
 
-text_field = "comment"  # the metadata field that contains our text
+    # initialize the vector store object
+    vectorstore = Pinecone(
+        index, embed_model.embed_query, text_field
+    )
 
-# initialize the vector store object
-vectorstore = Pinecone(
-    index, embed_model.embed_query, text_field
-)
+    print()
+    query = input("Product Description:\n")
+    print()
+    ignore_subreddits = input("Subreddits To Ignore:\n")
+    print()
 
+    ignore_subreddits = ignore_subreddits.split(",")
 
-print()
-query = input("Product Description:\n")
-print()
-ignore_subreddits = input("Subreddits To Ignore:\n")
-print()
+    prompt = HumanMessage(
+        content=augment_prompt(query)
+    )
 
-ignore_subreddits = ignore_subreddits.split(",")
+    messages = [prompt]
 
-prompt = HumanMessage(
-    content=augment_prompt(query)
-)
+    res = chat(messages)
 
-messages = [prompt]
+    print("OUTPUT")
+    print("======\n")
 
-res = chat(messages)
-
-print("OUTPUT")
-print("======\n")
-
-print(res.content)
+    print(res.content)

@@ -1,22 +1,22 @@
 import os
 import time
 import datetime
+import uuid
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import praw
-import pandas as pd
-import json
-import uuid
-from sqlalchemy import create_engine, Column, String, Float, ForeignKey, Text, Boolean
+from config import config
+
 
 reddit = praw.Reddit(
-    client_id=os.environ['CLIENT_ID'],
-    client_secret=os.environ['SECRET_KEY'],
-    user_agent="MyAPI/0.0.1",
-    username=os.environ['ACCOUNT_USERNAME'],
-    password=os.environ['ACCOUNT_PASSWORD']
+    client_id=config["reddit_config"]['client_id'],
+    client_secret=config["reddit_config"]['client_secret'],
+    user_agent=config["reddit_config"]['user_agent'],
+    username=config["reddit_config"]['username'],
+    password=config["reddit_config"]['password']
 )
+
 
 # SQLAlchemy Models
 Base = declarative_base()
