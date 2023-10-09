@@ -54,7 +54,7 @@ A tool to grab all the most recent Reddit comments (Hot) that suggest that the c
    source .env
    ```
 
-4. Collect Reddit data. To do this, run this script then provide the URL for a subreddit as well as the number of posts you want to collect from the Hot page of a subreddit. Run this command and input those values:
+4. Collect Reddit data. To do this, run this script then provide the URL for a subreddit as well as the number of posts you want to collect from the Hot page of a subreddit. Note that the number of posts specified will be extracted for *each* subreddit specified. Run this command and input those values (Be mindful that the reddit API that this depends on limits post queries to 600 per 600 seconds):
 
    ```
    python3 reddit.py
