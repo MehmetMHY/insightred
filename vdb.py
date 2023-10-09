@@ -94,6 +94,7 @@ def vectorize(embed_model, model, token_limit, index_name):
 
         comment_id = clean_str(comment["id"])
         comment_content = clean_str(comment["comment"])
+        comment_scraped = comment["recorded"]
 
         all_post = "{}. {}".format(post_title, post_content)
 
@@ -101,7 +102,8 @@ def vectorize(embed_model, model, token_limit, index_name):
         meta_data = {
             "post": post_id,
             "comment": comment_id,
-            "subreddit": post_subreddit
+            "subreddit": post_subreddit,
+            "time": comment_scraped
         }
 
         token_count = get_token_count(prompt, model)
@@ -143,7 +145,8 @@ def vectorize(embed_model, model, token_limit, index_name):
             {
                 'post': item['meta_data']['post'],
                 'comment': item['meta_data']['comment'],
-                'subreddit': item['meta_data']['subreddit']
+                'subreddit': item['meta_data']['subreddit'],
+                'time' : item['meta_data']['time']
             } for item in batch
         ]
 

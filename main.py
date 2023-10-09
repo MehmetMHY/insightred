@@ -36,14 +36,20 @@ def clean_str(content):
     return s
 
 
-def augment_prompt(query: str, ignore_subreddits=[]):
+def augment_prompt(query: str, ignore_subreddits=[],time_cutoff = 0):
     session = initialize_db()
+
+    if not (isinstance(time_cutoff, int)):
+        time_cutoff = 0
 
     # get top 3 results from knowledge base
     results = vectorstore.similarity_search(query, k=8, filter={
         "subreddit": {
             "$nin": ignore_subreddits
-        }
+        },
+         "time":{
+             "$gt": time_cutoff
+         }
     })
 
     # get the text from the results
@@ -135,11 +141,13 @@ if __name__ == "__main__":
     print()
     ignore_subreddits = input("Subreddits To Ignore:\n")
     print()
+    time_cutoff = input("Oldest time allowed (in Epoch time)\n")
+    print()
 
     ignore_subreddits = ignore_subreddits.split(",")
 
     prompt = HumanMessage(
-        content=augment_prompt(query)
+        content=augment_prompt(query, ignore_subreddits, time_cutoff)
     )
 
     messages = [prompt]
