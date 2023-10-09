@@ -105,6 +105,12 @@ def vectorize(embed_model, model, token_limit, index_name):
         }
 
         token_count = get_token_count(prompt, model)
+
+        MIN_TOKEN = 6
+        if (token_count <= MIN_TOKEN):
+            continue
+
+
         while token_count > token_limit:
             if len(all_post.split()) > len(comment_content.split()):
                 all_post = " ".join(all_post.split()[:-1])
