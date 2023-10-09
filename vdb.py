@@ -57,9 +57,9 @@ def clean_str(content):
 
 # TODO: this will most likely need adjusting
 def create_prompt(all_post, comment_content):
-    succinct_content = "COMMENT: {} POST: {}".format(
-        comment_content,
-        all_post
+    succinct_content = "A human in a forum reads the following headline: {} And responds by saying: {}".format(
+        all_post,
+        comment_content
     )
     return succinct_content
 
