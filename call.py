@@ -2,6 +2,7 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from config import config
 import reddit
 import vdb
+import ai
 
 
 def add_to_vector_db():
@@ -15,9 +16,26 @@ def add_to_vector_db():
     vdb.vectorize(embed_model, model_name, token_limit, index_name)
 
 
-def update_data(subreddits, postlimit, ):
+def update_data(product_description, ignore_subreddits, time_cutoff_seconds, subreddits, postlimit):
     # collect Reddit data, save to local SQLite database
-    reddit.get_reddit(subreddits, postlimit)
+    try:
+        reddit.get_reddit(subreddits, postlimit)
+    except Exception as err:
+        print("ERROR: {}".format(err))
+        return None
 
     # migrate Reddit data from local SQLite database to vector database (Pinecone)
-    add_to_vector_db()
+    try:
+        add_to_vector_db()
+    except Exception as err:
+        print("ERROR: {}".format(err))
+        return None
+
+    output = None
+    try:
+        output = ai.get_good_comments(
+            product_description, ignore_subreddits, time_cutoff_seconds)
+    except Exception as err:
+        output = None
+
+    return output
