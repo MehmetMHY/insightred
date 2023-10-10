@@ -1,7 +1,10 @@
 import streamlit as st
+from tqdm import tqdm
 import json
-import requests  # pip install requests
-from streamlit_lottie import st_lottie  # pip install streamlit-lottie
+import requests  
+import threading
+from main import update_data
+
 # CSS code
 st.markdown(
     f"""
@@ -10,63 +13,59 @@ st.markdown(
         body {{
             font-family: 'Roboto', sans-serif;
             animation: pulse 5s infinite;
-            background-size: 100% 100%;
-            background-image: url('backgroundimg.png');  # Replace with your GitHub raw image URL
-            background-repeat: no-repeat;
         }}
-        .custom-text-box {{
-            height: 100px; /* Adjust the height as needed */
+        .output-box {{
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-family: 'Roboto', sans-serif;
+            animation: pulse 5s infinite;
         }}
         
     </style>
     """,
     unsafe_allow_html=True,
-
 )
-def load_lottieurl(url: str):
-    r = requests.get(url)
-    if r.status_code != 200:
-        return None
-    return r.json()
 
-lottie_hello = load_lottieurl("https://lottie.host/?file=e5669da7-f681-418f-b8e0-021a8e890a13/H8jy4AG3jX.json")
-st_lottie(
-    lottie_hello,
-    speed=1,
-    reverse=False,
-    loop=True,
-    quality="low", # medium ; high
-    renderer="svg", # canvas
-    height=None,
-    width=None,
-    key=None,
-)
+def update_data_with_progress(product_description, ignore_subreddits, time_cutoff_seconds, subreddits, postlimit):
+    with st.empty():
+        progress_bar = st.progress(0)
+
+        # Call the update_data function and monitor progress with tqdm
+        data = None  # Initialize data as None
+        for progress in tqdm(update_data(product_description, ignore_subreddits, time_cutoff_seconds, subreddits, postlimit), unit="item"):
+            progress_bar.progress(progress)
+        
+        # Store the JSON data returned by the update_data function
+        data = update_data(product_description, ignore_subreddits, time_cutoff_seconds, subreddits, postlimit)
+
+    return data  # Return the JSON data
+
 # Title
 st.title("Reddit API")
 
 # Text box for product description
-product_paragraph = st.text_area("Product Description", key="product_desc")
+product_description = st.text_area("Product Description", key="product_desc")
 
-# Text box for subreddit url
-additional_text = st.text_area("Subreddit URL", key="subreddit_url", height=50)
+# Text box for subreddit URL(s)
+subreddit_urls = st.text_area("Subreddit URL(s)", key="subreddit_urls")
 
-# Button
-if st.button("Run Code"):
-    
-    st.text("Fetching Comments...")
+# Text box for subreddit(s) to ignore
+ignore_subreddits = st.text_area("Subreddit(s) to Ignore", key="ignore_subreddits")
 
-    # Simulate a job with progress
-    import time
-    progress_bar = st.progress(0)
-    for i in range(101):
-        time.sleep(0.1)
-        progress_bar.progress(i)
+# Integer input for the number of posts to scrape per subreddit
+num_posts_to_scrape = st.number_input("Number of Posts to Scrape per Subreddit", min_value=1, step=1, key="num_posts")
 
-    st.text("Results Ready!")
+# Integer/Float input the epoch time, in seconds
+time_cutoff_seconds = st.number_input("Epoch Time (in seconds)", min_value=0.0, key="time_cutoff_seconds")
 
-    # This will display any comments or outputs from your job
-    st.text("Comments:")
+if st.button("Update Data"):
+    data = update_data_with_progress(product_description, ignore_subreddits, time_cutoff_seconds, subreddits, postlimit)
 
-    # Display comments here (replace with your actual comments)
-    st.text("Comment 1")
-    st.text("Comment 2")
+for comment_key, comment_data in data.items():
+    comment_text = comment_data.get("COMMENT", "N/A")
+    post = comment_data.get("POST", "N/A")
+    url = comment_data.get("URL", "N/A")
+
+    # Display values in the HTML div
+    st.markdown(f"<div class='output-box'>COMMENT: {comment_text} <br>POST: {post} <br>URL: {url}</div>", unsafe_allow_html=True)
