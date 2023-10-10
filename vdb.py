@@ -112,7 +112,6 @@ def vectorize(embed_model, model, token_limit, index_name):
         if (token_count <= MIN_TOKEN):
             continue
 
-
         while token_count > token_limit:
             if len(all_post.split()) > len(comment_content.split()):
                 all_post = " ".join(all_post.split()[:-1])
@@ -146,7 +145,7 @@ def vectorize(embed_model, model, token_limit, index_name):
                 'post': item['meta_data']['post'],
                 'comment': item['meta_data']['comment'],
                 'subreddit': item['meta_data']['subreddit'],
-                'time' : item['meta_data']['time']
+                'time': item['meta_data']['time']
             } for item in batch
         ]
 
@@ -163,17 +162,3 @@ def vectorize(embed_model, model, token_limit, index_name):
     session.commit()
     session.close()
     print("DONE!")
-
-
-if __name__ == "__main__":
-    model_name = config["embedding"]["name"]
-    token_limit = config["embedding"]["token_limit"]
-    index_name = config["pinecone_db"]["index"]
-    vdb_dimension = config["pinecone_db"]["dimension"]
-    vdb_metric = config["pinecone_db"]["metric"]
-
-    embed_model = OpenAIEmbeddings(model=model_name)
-
-    initilize_pinecone(index_name, vdb_dimension, vdb_metric)
-
-    vectorize(embed_model, model_name, token_limit, index_name)

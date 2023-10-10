@@ -21,7 +21,8 @@ config = {
     },
     "rag": {
         "main_model": "gpt4",
-        "openai_api_key": os.environ["OPENAI_API_KEY"]
+        "openai_api_key": os.environ["OPENAI_API_KEY"],
+        "k": 7
     },
     "local_db": {
         "type": "SQLite",

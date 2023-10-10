@@ -7,6 +7,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import praw
 from config import config
+from sqlalchemy import distinct, create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 reddit = praw.Reddit(
@@ -54,8 +56,17 @@ class Comment(Base):
     vectorized = Column(Boolean, default=False)
 
 
-def initialize_db():
-    engine = create_engine('sqlite:///.reddit_data.db')
+def get_all_unique_subreddits(session):
+    distinct_subreddits_tuples = session.query(distinct(Post.subreddit)).all()
+    distinct_subreddits = [item[0] for item in distinct_subreddits_tuples]
+    return distinct_subreddits
+
+
+def initialize_db(log_it=True):
+    connection_url = "sqlite:///{}".format(config["local_db"]["filename"])
+    if log_it:
+        print("Intilizing SQLite connection: {}".format(connection_url))
+    engine = create_engine(connection_url)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     return Session()
@@ -190,24 +201,3 @@ def get_reddit(subreddit_urls, hot_posts_limit):
             subreddit_url, hot_posts_limit, session)
         save_to_db(session, data_list)
     return
-
-
-if __name__ == "__main__":
-    print("\n\n")
-
-    subreddits = []
-    while True:
-        subreddit = input("SUB-REDDIT (type 'exit' to process): ")
-        if subreddit.lower() == 'exit':
-            break
-        else:
-            subreddits.append(subreddit)
-
-    print()
-
-    postlimit = input("POST LIMIT: ")
-    postlimit = int(postlimit)
-
-    print("\n\n")
-
-    get_reddit(subreddits, postlimit)

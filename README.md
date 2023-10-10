@@ -1,8 +1,8 @@
-# Reddit Marketing - LLM Tool
+# InsightRed
 
 ## About
 
-A tool to grab all the most recent Reddit comments (Hot) that suggest that the comment's user might be interested in your project/product.
+A LLM tool for grabbing the most recent Reddit comments (Hot) that suggest that the comment's user might be interested in your project/product.
 
 ## How To Setup
 

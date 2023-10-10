@@ -59,8 +59,9 @@ def augment_prompt(vectorstore, query: str, ignore_subreddits=[], time_cutoff=0)
     if not (isinstance(time_cutoff, int)):
         time_cutoff = 0
 
-    # get top 3 results from knowledge base
-    results = vectorstore.similarity_search(query, k=8, filter={
+    print("Using K={} for similariy search".format(config["rag"]["k"]))
+
+    results = vectorstore.similarity_search(query, k=config["rag"]["k"], filter={
         "subreddit": {
             "$nin": ignore_subreddits
         },
@@ -149,27 +150,11 @@ def get_good_comments(product_description, ignore_subreddits, time_cutoff_second
         index, embed_model.embed_query, "comment"
     )
 
-    ignore_subreddits = ignore_subreddits.split(",")
-
     prompt = augment_prompt(vectorstore, product_description,
                             ignore_subreddits, time_cutoff_seconds)
 
-    res = client.complete(prompt=prompt, max_len=8000)
+    print("Prompt generated. Now requesting from LLM (this might take a few minutes)...")
+
+    res = client.complete(prompt=prompt, max_len=1000)
 
     return extract_json(res)
-
-
-if __name__ == "__main__":
-    print()
-    product_description = input("Product Description:\n")
-    print()
-    ignore_subreddits = input("Subreddits To Ignore:\n")
-    print()
-    time_cutoff_seconds = input("Oldest time allowed (in Epoch time)\n")
-    print()
-
-    output = get_good_comments(product_description,
-                               ignore_subreddits, time_cutoff_seconds)
-
-    print("OUTPUT:")
-    print(json.dumps(output, indent=4))
