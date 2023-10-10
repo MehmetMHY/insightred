@@ -20,7 +20,7 @@ config = {
         "password": os.environ['ACCOUNT_PASSWORD']
     },
     "rag": {
-        "main_model": "gpt-4",
+        "main_model": "gpt4",
         "openai_api_key": os.environ["OPENAI_API_KEY"]
     },
     "local_db": {

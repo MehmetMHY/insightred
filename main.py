@@ -15,6 +15,7 @@ import json
 
 from reddit import Post, Comment, initialize_db
 from config import config
+from llm_vm.client import client_build
 
 
 def object_as_dict(obj):
@@ -61,8 +62,7 @@ def augment_prompt(query: str, ignore_subreddits=[],time_cutoff = 0):
         unvectorized_comments = session.query(
             Comment).filter_by(id=comment_id).all()
 
-        comment_dict = [object_as_dict(comment)
-                        for comment in unvectorized_comments][0]
+        comment_dict = [object_as_dict(comment) for comment in unvectorized_comments][0]
 
         post = session.query(Post).filter_by(
             id=comment_dict["post_id"]).first()
@@ -122,10 +122,8 @@ if __name__ == "__main__":
         environment=config["pinecone_db"]["environment"]
     )
 
-    chat = ChatOpenAI(
-        openai_api_key=config["rag"]["openai_api_key"],
-        model=config["rag"]["main_model"]
-    )
+    client = client_build(type= "inference", openai_key=config["rag"]["openai_api_key"], big_model=config["rag"]["main_model"])
+
 
     index = pinecone.Index(config["pinecone_db"]["index"])
 
@@ -146,15 +144,12 @@ if __name__ == "__main__":
 
     ignore_subreddits = ignore_subreddits.split(",")
 
-    prompt = HumanMessage(
-        content=augment_prompt(query, ignore_subreddits, time_cutoff)
-    )
+    prompt = augment_prompt(query, ignore_subreddits, time_cutoff)
 
-    messages = [prompt]
 
-    res = chat(messages)
+    res = client.complete(prompt = prompt, max_len = 1000)
 
     print("OUTPUT")
     print("======\n")
 
-    print(res.content)
+    print(res)
