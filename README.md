@@ -83,7 +83,7 @@ A tool to grab all the most recent Reddit comments (Hot) that suggest that the c
 
 7. Run the main script and input your values:
    ```
-   python3 main.py
+   python3 ai.py
    ```
    - You will be asked to provide a product description, do this, but be mindful of what you provide. The model does better based on your input.
    - You will be asked for subreddits you might want to ignore. In this case, either just hit ENTER to skip all that or provide an input formatted like this:
