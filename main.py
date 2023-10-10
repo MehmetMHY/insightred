@@ -82,12 +82,12 @@ if __name__ == "__main__":
     }
 
     print(colors["red"] + """
-INSIGHT RED - A Reddit LLM Tool                          
+INSIGHT RED - A Targeted Reddit Ads LLM Tool                          
 """ + colors["reset"])
 
     subreddits = []
     while (True):
-        subreddit = input("{}(Hit ENTER To Exist) {}Sub-Reddit URL:{} ".format(
+        subreddit = input("{}(Hit ENTER To Exit) {}Sub-Reddit URL:{} ".format(
             colors["yellow"], colors["green"], colors["reset"]))
 
         if len(subreddit) == 0:
@@ -116,14 +116,14 @@ INSIGHT RED - A Reddit LLM Tool
         except:
             post_limit = None
             print(
-                "{}input MOST be type int!{}".format(colors["red"], colors["reset"]))
+                "{}input MUST be type int!{}".format(colors["red"], colors["reset"]))
 
     print("\n• • •\n")
 
     earlist_epoch_time_sec = None
     while (True):
 
-        print("{}(FLOAT/INT Type) Earlist Epoch Time (Seconds):{} ".format(
+        print("{}(FLOAT/INT Type) Earliest Epoch Time (Seconds):{} ".format(
             colors['cyan'], colors["reset"]))
         print("{}   1 day ago = {} epoch seconds{}".format(
             colors["cyan"], time.time() - (60 * 60 * 24), colors["reset"]))
@@ -148,11 +148,11 @@ INSIGHT RED - A Reddit LLM Tool
                 break
             else:
                 print(
-                    "{}input MOST be greater then or equal to zero!{}".format(colors["red"], colors["reset"]))
+                    "{}input MUST be greater then or equal to zero!{}".format(colors["red"], colors["reset"]))
         except:
             earlist_epoch_time_sec = None
             print(
-                "{}input MOST be type float/int!{}".format(colors["red"], colors["reset"]))
+                "{}input MUST be type float/int!{}".format(colors["red"], colors["reset"]))
 
     print("\n• • •\n")
 
@@ -167,7 +167,7 @@ INSIGHT RED - A Reddit LLM Tool
         print("\nWhich Sub-Reddit(s) would you like to ignore?\n")
         while (True):
             selected_usr = input(
-                "(INT) (Hit ENTER To Exist) Sub-Reddit (ID) To Ignore: ")
+                "(INT) (Hit ENTER To Exit) Sub-Reddit (ID) To Ignore: ")
 
             if len(selected_usr) == 0:
                 break
@@ -175,14 +175,14 @@ INSIGHT RED - A Reddit LLM Tool
             try:
                 selected_usr = int(selected_usr)
                 if selected_usr < 0 or selected_usr > len(uniq_subreddits)-1:
-                    print("{}input MOST be between {} & {}! {}".format(
+                    print("{}input MUST be between {} & {}! {}".format(
                         colors["red"], 0, len(uniq_subreddits)-1, colors["reset"]))
                 else:
                     subreddits_to_ignore.append(uniq_subreddits[selected_usr])
             except:
                 post_limit = None
                 print(
-                    "{}input MOST be type int!{}".format(colors["red"], colors["reset"]))
+                    "{}input MUST be type int!{}".format(colors["red"], colors["reset"]))
 
     print("\n• • •\n")
 
