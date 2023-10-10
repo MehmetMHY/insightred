@@ -125,11 +125,13 @@ INSIGHT RED - A Targeted Reddit Ads LLM Tool
 
         print("{}(FLOAT/INT Type) Earliest Epoch Time (Seconds):{} ".format(
             colors['cyan'], colors["reset"]))
+        print("{}(Press ENTER to set to DEFAULT):{} ".format(
+            colors['cyan'], colors["reset"]))
         print("{}   1 day ago = {} epoch seconds{}".format(
             colors["cyan"], time.time() - (60 * 60 * 24), colors["reset"]))
         print("{}   3 days ago = {} epoch seconds{}".format(
             colors["cyan"], time.time() - (60 * 60 * 24 * 3), colors["reset"]))
-        print("{}   1 week ago = {} epoch seconds{}".format(
+        print("{}   1 week ago = {} epoch seconds (DEFAULT){}".format(
             colors["cyan"], time.time() - (60 * 60 * 24 * 7), colors["reset"]))
         print("{}   2 weeks ago = {} epoch seconds{}".format(
             colors["cyan"], time.time() - (60 * 60 * 24 * 14), colors["reset"]))
@@ -139,7 +141,7 @@ INSIGHT RED - A Targeted Reddit Ads LLM Tool
             "{}EPOCH VALUE:{} ".format(colors["cyan"], colors["reset"]))
 
         if len(input_epoch) == 0:
-            earlist_epoch_time_sec = 0
+            earlist_epoch_time_sec = time.time() - 600000
             break
 
         try:
@@ -200,4 +202,9 @@ INSIGHT RED - A Targeted Reddit Ads LLM Tool
 
     print("{}FINAL RESULTS:{}\n".format(colors["green"], colors["reset"]))
 
-    print(json.dumps(output, indent=4))
+    for i, entry in enumerate(output):
+        print("{}{}.{}\n".format(colors["red"], str(i+1), colors["reset"]))
+        print("COMMENT: "  + entry["comment"] + "\n")
+        print("POST: "  + entry["post"] + "\n")
+        print("URL: {}{}{}\n".format(colors["blue"], entry["url"], colors["reset"]))
+
