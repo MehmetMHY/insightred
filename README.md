@@ -35,14 +35,14 @@ A tool to grab all the most recent Reddit comments (Hot) that suggest that the c
    # activate local python environment
    source env/bin/activate
 
-   # get and install LLM-VM
+   # install python dependencies
+   pip3 install -r requirements.txt
+
+   # install LLM-VM
    git clone https://github.com/anarchy-ai/LLM-VM.git
    cd LLM-VM
    pip3 install .
    cd ..
-
-   # install other python dependencies
-   pip3 install -r requirements.txt
    ```
 
 2. Set your environment variables in a file called ".env". This file should contain the following content (you set your key values):
