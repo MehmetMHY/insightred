@@ -1,21 +1,37 @@
-from langchain.chat_models import ChatOpenAI
 from langchain.vectorstores import Pinecone
-from sqlalchemy import create_engine, inspect
-import os
+from sqlalchemy import inspect
 import pinecone
-import time
 from langchain.embeddings.openai import OpenAIEmbeddings
 import re
-from langchain.schema import (
-    SystemMessage,
-    HumanMessage,
-    AIMessage
-)
+import ast
 import json
 
 from reddit import Post, Comment, initialize_db
 from config import config
 from llm_vm.client import client_build
+
+
+# extract json from GPT-4 output, or return original text
+def extract_json(text):
+    lines = text.split("\n")
+    json_content = ""
+    collect = False
+
+    for line in lines:
+        if "```json" in line:
+            collect = True
+            continue
+        elif "```" in line and collect:
+            collect = False
+
+        if collect:
+            json_content += line
+
+    try:
+        obj = ast.literal_eval(json_content)
+        return obj
+    except (ValueError, SyntaxError):
+        return json_content
 
 
 def object_as_dict(obj):
@@ -37,7 +53,7 @@ def clean_str(content):
     return s
 
 
-def augment_prompt(query: str, ignore_subreddits=[],time_cutoff = 0):
+def augment_prompt(vectorstore, query: str, ignore_subreddits=[], time_cutoff=0):
     session = initialize_db()
 
     if not (isinstance(time_cutoff, int)):
@@ -48,9 +64,9 @@ def augment_prompt(query: str, ignore_subreddits=[],time_cutoff = 0):
         "subreddit": {
             "$nin": ignore_subreddits
         },
-         "time":{
-             "$gt": time_cutoff
-         }
+        "time": {
+            "$gt": time_cutoff
+        }
     })
 
     # get the text from the results
@@ -62,7 +78,8 @@ def augment_prompt(query: str, ignore_subreddits=[],time_cutoff = 0):
         unvectorized_comments = session.query(
             Comment).filter_by(id=comment_id).all()
 
-        comment_dict = [object_as_dict(comment) for comment in unvectorized_comments][0]
+        comment_dict = [object_as_dict(comment)
+                        for comment in unvectorized_comments][0]
 
         post = session.query(Post).filter_by(
             id=comment_dict["post_id"]).first()
@@ -114,7 +131,7 @@ Output the results in the following JSON format: an array of objects, where each
     return augmented_prompt
 
 
-if __name__ == "__main__":
+def get_good_comments(product_description, ignore_subreddits, time_cutoff_seconds):
     embed_model = OpenAIEmbeddings(model=config["embedding"]["name"])
 
     pinecone.init(
@@ -122,34 +139,37 @@ if __name__ == "__main__":
         environment=config["pinecone_db"]["environment"]
     )
 
-    client = client_build(type= "inference", openai_key=config["rag"]["openai_api_key"], big_model=config["rag"]["main_model"])
-
+    client = client_build(
+        type="inference", openai_key=config["rag"]["openai_api_key"], big_model=config["rag"]["main_model"])
 
     index = pinecone.Index(config["pinecone_db"]["index"])
 
-    text_field = "comment"  # the metadata field that contains the text
-
     # initialize the vector store object
     vectorstore = Pinecone(
-        index, embed_model.embed_query, text_field
+        index, embed_model.embed_query, "comment"
     )
-
-    print()
-    query = input("Product Description:\n")
-    print()
-    ignore_subreddits = input("Subreddits To Ignore:\n")
-    print()
-    time_cutoff = input("Oldest time allowed (in Epoch time)\n")
-    print()
 
     ignore_subreddits = ignore_subreddits.split(",")
 
-    prompt = augment_prompt(query, ignore_subreddits, time_cutoff)
+    prompt = augment_prompt(vectorstore, product_description,
+                            ignore_subreddits, time_cutoff_seconds)
+
+    res = client.complete(prompt=prompt, max_len=8000)
+
+    return extract_json(res)
 
 
-    res = client.complete(prompt = prompt, max_len = 1000)
+if __name__ == "__main__":
+    print()
+    product_description = input("Product Description:\n")
+    print()
+    ignore_subreddits = input("Subreddits To Ignore:\n")
+    print()
+    time_cutoff_seconds = input("Oldest time allowed (in Epoch time)\n")
+    print()
 
-    print("OUTPUT")
-    print("======\n")
+    output = get_good_comments(product_description,
+                               ignore_subreddits, time_cutoff_seconds)
 
-    print(res)
+    print("OUTPUT:")
+    print(json.dumps(output, indent=4))
