@@ -67,29 +67,10 @@ A LLM tool for grabbing the most recent Reddit comments (Hot) that suggest that 
    source .env
    ```
 
-4. Collect Reddit data. To do this, run this script then provide the URL for a subreddit as well as the number of posts you want to collect from the Hot page of a subreddit. Note that the number of posts specified will be extracted for _each_ subreddit specified. Run this command and input those values (Be mindful that the reddit API that this depends on limits post queries to 600 per 600 seconds):
-
+4. Run the CLI tool to use this application. Run the following command and fill out ALL of the questions:
    ```
-   python3 reddit.py
+   python3 main.py
    ```
-
-5. Make sure you setup your Pinecone account. Go to this link to setup it up: https://www.pinecone.io/. Don't setup an Index, the scripts will do it automatically.
-
-6. Step 3 saves the data to a local sqLite database/file. Now we need to convert that data to a vector database. To do this, run this script:
-
-   ```
-   python3 vdb.py
-   ```
-
-7. Run the main script and input your values:
-   ```
-   python3 ai.py
-   ```
-   - You will be asked to provide a product description, do this, but be mindful of what you provide. The model does better based on your input.
-   - You will be asked for subreddits you might want to ignore. In this case, either just hit ENTER to skip all that or provide an input formatted like this:
-     ```
-     news,askReddit,gamer
-     ```
 
 ## Credits:
 
