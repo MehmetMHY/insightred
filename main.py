@@ -21,6 +21,16 @@ def add_to_vector_db():
 
 
 def update_data(product_description, ignore_subreddits, time_cutoff_seconds, subreddits, postlimit):
+    """
+    Main function for this project
+
+    product_description : (string) The user's description of their product/project
+    ignore_subreddits: (array of strings) Sub-reddits to ignore (not urls, just names)
+    time_cutoff_seconds: (int/float) The epoch time, in seconds, of the latest time a comment was recorded
+    subreddits: (array of strings) The URL(s) of sub-reddits that will be scraped
+    postlimit: (int) The number of posts we will scrape from the Hot-listing on a sub-reddit
+    """
+
     # collect Reddit data, save to local SQLite database
     ran_scrapper = False
     if len(subreddits) > 0 and postlimit > 0:
