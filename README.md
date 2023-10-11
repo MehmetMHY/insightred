@@ -39,8 +39,8 @@ This project was build for the ANARCHY October 2023 Hackathon. Checkout ANARCHY 
 2. Clone this project and cd into it:
 
    ```
-   git clone git@github.com:MehmetMHY/reddit-marketing.git
-   cd reddit-marketing
+   git clone git@github.com:MehmetMHY/insightred.git
+   cd insightred
    ```
 
 3. For this tool, you will need to get these API keys:
