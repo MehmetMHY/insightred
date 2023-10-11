@@ -1,0 +1,12 @@
+# Reddit API keys
+export CLIENT_ID=""
+export SECRET_KEY=""
+export ACCOUNT_USERNAME=""
+export ACCOUNT_PASSWORD=""
+ 
+# OpenAI API key (to use GPT models)
+export OPENAI_API_KEY=""
+
+# Pinecone (Vector Database) API key
+export PINECONE_API_KEY=""
+

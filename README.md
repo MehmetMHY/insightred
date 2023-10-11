@@ -2,7 +2,7 @@
 
 ## About
 
-A LLM tool for grabbing the most recent Reddit comments (Hot) that suggest that the comment's user might be interested in your project/product.
+An LLM-powered tool adept at extracting the latest Reddit comments from subreddits, sorted by "Hot", and pinpointing users who exhibit potential interest in your project or product. It's a Reddit marketing tool to help you get your initial users for your product/project.
 
 ## How To Setup
 
@@ -45,7 +45,7 @@ A LLM tool for grabbing the most recent Reddit comments (Hot) that suggest that 
    cd ..
    ```
 
-2. Set your environment variables in a file called ".env". This file should contain the following content (you set your key values):
+2. Set your environment variables in a file called ".env". Check out the "env_template" file to get an idea of the env variables needed. This file should contain the following content (you set your key values):
 
    ```
    # reddit bot keys
@@ -61,7 +61,9 @@ A LLM tool for grabbing the most recent Reddit comments (Hot) that suggest that 
    export PINECONE_API_KEY=""
    ```
 
-3. Make sure to source/activate your environment variables:
+   - Checkout
+
+3. Make sure to source/activate your environment variables and your python environment:
 
    ```
    source .env
