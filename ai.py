@@ -153,7 +153,9 @@ def get_good_comments(product_description, ignore_subreddits, time_cutoff_second
     prompt = augment_prompt(vectorstore, product_description,
                             ignore_subreddits, time_cutoff_seconds)
 
-    print("Prompt generated. Now requesting from LLM (this might take a few minutes)...")
+    print("\n")
+    print("===> Prompt generated. Now requesting from LLM (this might take a few minutes)...")
+    print("\n")
 
     res = client.complete(prompt=prompt, max_len=1000)
 

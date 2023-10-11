@@ -200,11 +200,17 @@ INSIGHT RED - A Targeted Reddit Ads LLM Tool
 
     print("\n• • •\n")
 
+    print("{}YOUR PRODUCT DESCRIPTION:{}".format(
+        colors["green"], colors["reset"]))
+
+    print("\n{}\n".format(product_description))
+
     print("{}FINAL RESULTS:{}\n".format(colors["green"], colors["reset"]))
 
     for i, entry in enumerate(output):
-        print("{}{}.{}\n".format(colors["red"], str(i+1), colors["reset"]))
-        print("COMMENT: "  + entry["comment"] + "\n")
-        print("POST: "  + entry["post"] + "\n")
-        print("URL: {}{}{}\n".format(colors["blue"], entry["url"], colors["reset"]))
-
+        print("{}{}. POST & COMMENT:{}\n".format(
+            colors["red"], str(i+1), colors["reset"]))
+        print("COMMENT: " + entry["comment"] + "\n")
+        print("POST: " + entry["post"] + "\n")
+        print("URL: {}{}{}\n".format(
+            colors["blue"], entry["url"], colors["reset"]))
