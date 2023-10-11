@@ -3,7 +3,6 @@
 <p align="center">
   <img width="250" src="./assets/logo.png">
 </p>
-<br>
 
 ## About
 
