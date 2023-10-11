@@ -8,6 +8,12 @@
 
 This project was build for the ANARCHY October 2023 Hackathon. Checkout ANARCHY on their [website](https://github.com/anarchy-ai) and [github](https://anarchy.ai/welcome/why_anarchy).
 
+## Team Members:
+
+- [Mehmet Yilmaz](https://github.com/MehmetMHY)
+- [Ben Zimmerman](https://github.com/T3CH3Y)
+- [Ananya Aithal](https://github.com/mysteriousbug)
+
 ## How To Setup
 
 1. (OPTIONAL) This is tool is designed for Unix based operating systems (MacOS or Linux). So if you are using Windows, I recommend using Docker. To set that up, do the following:
@@ -103,12 +109,6 @@ This project was build for the ANARCHY October 2023 Hackathon. Checkout ANARCHY 
    ```
 
 8. When the CLI is running, fill out all the questions. You can skip some of those questions if allowed. After the questions are answered, the tool should output Reddit comments you can reply to for your project/product.
-
-## Team Members:
-
-- [Mehmet Yilmaz](https://github.com/MehmetMHY)
-- [Ben Zimmerman](https://github.com/T3CH3Y)
-- [Ananya Aithal](https://github.com/mysteriousbug)
 
 ## Credits:
 
