@@ -1,7 +1,5 @@
-<br>
-<br>
 <p align="center">
-  <img width="250" src="./assets/logo.png">
+  <img width="300" src="./assets/logo.png">
 </p>
 
 ## About
