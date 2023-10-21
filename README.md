@@ -14,6 +14,16 @@ This project was build for the ANARCHY October 2023 Hackathon. Checkout ANARCHY 
 - [Ben Zimmerman](https://github.com/T3CH3Y)
 - [Ananya Aithal](https://github.com/mysteriousbug)
 
+## Demo:
+
+<div align="center">
+
+[![Demo Video](./assets/thumbnail.png)](https://youtu.be/xhKwnKxmg5k)
+
+*click the image to view the YouTube video or click here: https://youtu.be/xhKwnKxmg5k*
+
+</div>
+
 ## How To Setup
 
 1. (OPTIONAL) This is tool is designed for Unix based operating systems (MacOS or Linux). So if you are using Windows, I recommend using Docker. To set that up, do the following:
